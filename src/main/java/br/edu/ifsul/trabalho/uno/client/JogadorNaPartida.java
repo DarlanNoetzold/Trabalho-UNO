@@ -5,7 +5,6 @@
 package br.edu.ifsul.trabalho.uno.client;
 
 import br.edu.ifsul.trabalho.uno.model.Carta;
-import br.edu.ifsul.trabalho.uno.server.Partida;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -13,9 +12,7 @@ import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
-import java.util.Objects;
 
 /**
  *
@@ -50,15 +47,9 @@ public class JogadorNaPartida extends Thread {
                     pescar(textoSeparado);
                     linha = teclado.readLine();
                     saida.println(linha);
-
-                }else if(textoSeparado[0].equals("jogada")){
-                    //TODO jogada
-                    linha = teclado.readLine();
-                    saida.println(linha);
-                }else if(textoSeparado[0].equals("comeca")){
-                    System.out.println("\nVocê incia!");
-                    linha = teclado.readLine();
-                    saida.println(linha);
+                }else if(textoSeparado[0].equals("jogada") || textoSeparado[0].equals("comeca")){
+                    System.out.println("Sua vez!");
+                    fazerJogada(linha, saida, teclado);
                 }else if(initFlag){
                     System.out.println("No aguardo para o primeiro jogador apertar enter...");
                     teclado.readLine();
@@ -92,6 +83,12 @@ public class JogadorNaPartida extends Thread {
     private void pescar(String[] textoSeparado){
         for (int i = 1; i < textoSeparado.length - 1; i = i + 2)
             cartasNaMao.add(new Carta(textoSeparado[i], textoSeparado[i + 1]));
+    }
+
+    private void fazerJogada(String linha, PrintStream saida, BufferedReader teclado) throws IOException {
+        linha = teclado.readLine();
+        //TODO
+        saida.println(linha);
     }
 
     public static void main(String args[]) {

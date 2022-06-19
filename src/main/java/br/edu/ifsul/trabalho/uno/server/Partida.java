@@ -50,6 +50,7 @@ public class Partida extends Thread {
             while (linha != null && !(linha.trim().equals(""))) {
                 StringBuilder streamToSend = new StringBuilder();
                 String[] textoSeparado = linha.split(";");
+
                 if(textoSeparado.length >= 1) {
                     if (Objects.equals(textoSeparado[0], "pescarIni")) {
                         streamToSend.append("pescar;");
@@ -59,9 +60,14 @@ public class Partida extends Thread {
                         streamToSend.append("pescar;");
                         for (Carta c : pescar(Integer.parseInt(textoSeparado[1]))) streamToSend.append(c.toString());
                         sendToNext(saida, streamToSend.toString(), jogador);
+                    }else if (Objects.equals(textoSeparado[0], "jogada")) {
+                        streamToSend.append("pescar;");
+                        for (Carta c : pescar(Integer.parseInt(textoSeparado[1]))) streamToSend.append(c.toString());
+                        sendToNext(saida, streamToSend.toString(), jogador);
                     }else if(ehInicial){
                         sendToJogador(saida, "comeca;", jogador);
                     }else{
+                        //just testing
                         streamToSend.append("jogada");
                         streamToSend.append(linha);
                         sendToAll(saida, " disse: ",streamToSend.toString());
@@ -78,13 +84,13 @@ public class Partida extends Thread {
         }
     }
 
-    public void sendToJogador(PrintStream saida, String linha, Jogador jogador){
+    private void sendToJogador(PrintStream saida, String linha, Jogador jogador){
         PrintStream jogada = (PrintStream) jogador.getSaida();
         if (jogada == saida) {
             jogada.println(linha);
         }
     }
-    public void sendToAll(PrintStream saida, String acao,
+    private void sendToAll(PrintStream saida, String acao,
             String linha) throws IOException {
         Iterator<Jogador> iter = jogadores.iterator();
         while (iter.hasNext()) {
@@ -96,7 +102,7 @@ public class Partida extends Thread {
         }
     }
 
-    public void sendToNext(PrintStream saida, String linha, Jogador jogador) throws IOException {
+    private void sendToNext(PrintStream saida, String linha, Jogador jogador) throws IOException {
         if(jogadores.indexOf(jogador)+1 == jogadores.size()){
             PrintStream jogada = (PrintStream) jogadores.get(0).getSaida();
             jogada.println(linha);
@@ -105,10 +111,14 @@ public class Partida extends Thread {
             jogada.println(linha);
         }
     }
-    public List<Carta> pescar(int quant){
+    private List<Carta> pescar(int quant){
         List<Carta> cartasPescadas = new ArrayList<>();
         for(int i =0; i<quant;i++) cartasPescadas.add(Baralho.baralho.pop());
         return cartasPescadas;
+    }
+
+    private void atualizaPontuacao(){
+        //TODO
     }
 
     public static void main(String args[]) {
