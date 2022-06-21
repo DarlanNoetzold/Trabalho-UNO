@@ -75,9 +75,10 @@ public class JogadorNaPartida extends Thread {
     }
 
     private void mostrarCartasNaMao(){
-        for (int i = cartasNaMao.size(); i >= 0; i--) System.out.print("\t|" + i);
-        System.out.println();
-        cartasNaMao.forEach(System.out::print);
+        for (int i = 0; i < cartasNaMao.size(); i++) {
+            System.out.print(" | "+i + " - " + cartasNaMao.get(i).toString());
+        }
+        System.out.println("\n");
     }
 
     private void pescar(String[] textoSeparado){
