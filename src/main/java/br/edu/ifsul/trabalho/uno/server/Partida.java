@@ -115,6 +115,18 @@ public class Partida extends Thread {
         return cartasPescadas;
     }
 
+    private void inverte(){
+        Collections.reverse(jogadores);
+    }
+
+    private Jogador bloqueia(){
+        if(jogadores.indexOf(jogador)+1 == jogadores.size()){
+            return jogadores.get(0);
+        }else{
+            return jogadores.get(jogadores.indexOf(jogador)+1);
+        }
+    }
+
     private void atualizaPontuacao(){
         //TODO
     }
