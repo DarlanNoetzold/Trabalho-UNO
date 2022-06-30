@@ -100,6 +100,7 @@ public class JogadorNaPartida extends Thread {
             if(index != -1) break;
         }
         saida.println("jogada;" + cartasNaMao.get(index).toString());
+        cartasNaMao.remove(index);
     }
 
     public static void main(String args[]) {
