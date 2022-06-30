@@ -87,9 +87,19 @@ public class JogadorNaPartida extends Thread {
     }
 
     private void fazerJogada(String linha, PrintStream saida, BufferedReader teclado) throws IOException {
-        linha = teclado.readLine();
-        //TODO
-        saida.println(linha);
+        mostrarCartasNaMao();
+        System.out.println("Digite o código da carta: ");
+        int index = 0;
+        while(true){
+            try {
+                index = Integer.parseInt(teclado.readLine());
+            }catch (Exception e){
+                System.out.println("Valor Inválido! >:( Digite um número positivo!");
+                index = -1;
+            }
+            if(index != -1) break;
+        }
+        saida.println("jogada;" + cartasNaMao.get(index).toString());
     }
 
     public static void main(String args[]) {

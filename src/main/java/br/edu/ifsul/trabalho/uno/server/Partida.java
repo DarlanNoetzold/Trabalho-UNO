@@ -61,14 +61,15 @@ public class Partida extends Thread {
                         for (Carta c : pescar(Integer.parseInt(textoSeparado[1]))) streamToSend.append(c.toString());
                         sendToNext(saida, streamToSend.toString(), jogador);
                     }else if (Objects.equals(textoSeparado[0], "jogada")) {
+                        System.out.println(Arrays.toString(textoSeparado));
                         //TODO
                     }else if(ehInicial){
                         sendToJogador(saida, "comeca;", jogador);
                     }else{
                         //just testing
-                        streamToSend.append("jogada");
-                        streamToSend.append(linha);
-                        sendToAll(saida, " disse: ",streamToSend.toString());
+                        //streamToSend.append("jogada");
+                        //streamToSend.append(linha);
+                        //sendToAll(saida, " disse: ",streamToSend.toString());
                     }
 
                 }else sendToAll(saida, " disse: ", linha);
