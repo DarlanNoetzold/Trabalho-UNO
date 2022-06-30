@@ -47,9 +47,12 @@ public class JogadorNaPartida extends Thread {
                     pescar(textoSeparado);
                     linha = teclado.readLine();
                     saida.println(linha);
-                }else if(textoSeparado[0].equals("jogada") || textoSeparado[0].equals("comeca")){
+                }else if(textoSeparado[0].equals("comeca")){
                     System.out.println("Sua vez!");
-                    fazerJogada(linha, saida, teclado);
+                    fazerJogada(textoSeparado, saida, teclado);
+                }else if(textoSeparado[0].equals("jogada")){
+                    System.out.println("Sua vez!");
+                    fazerJogada(textoSeparado, saida, teclado);
                 }else if(initFlag){
                     System.out.println("No aguardo para o primeiro jogador apertar enter...");
                     teclado.readLine();
@@ -86,7 +89,7 @@ public class JogadorNaPartida extends Thread {
             cartasNaMao.add(new Carta(textoSeparado[i], textoSeparado[i + 1]));
     }
 
-    private void fazerJogada(String linha, PrintStream saida, BufferedReader teclado) throws IOException {
+    private void fazerJogada(String[] textoSeparado, PrintStream saida, BufferedReader teclado) throws IOException {
         mostrarCartasNaMao();
         System.out.println("Digite o código da carta: ");
         int index = 0;
@@ -99,8 +102,17 @@ public class JogadorNaPartida extends Thread {
             }
             if(index != -1) break;
         }
-        saida.println("jogada;" + cartasNaMao.get(index).toString());
-        cartasNaMao.remove(index);
+        Carta cartaEscolhida =  cartasNaMao.get(index);
+        if(textoSeparado[1].equals(cartaEscolhida.getNome())|| textoSeparado[2].equals(cartaEscolhida.getCor())){
+            saida.println("jogada;" + cartasNaMao.get(index).toString());
+            cartasNaMao.remove(index);
+        }else{
+            System.out.println("Esta carta não pode ser jogada!");
+            fazerJogada(textoSeparado, saida, teclado);
+        }
+
+
+
     }
 
     public static void main(String args[]) {
