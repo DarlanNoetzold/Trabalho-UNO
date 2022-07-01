@@ -62,7 +62,32 @@ public class Partida extends Thread {
                         sendToNext(saida, streamToSend.toString(), jogador);
                     }else if (Objects.equals(textoSeparado[0], "jogada")) {
                         System.out.println(Arrays.toString(textoSeparado));
-                        //TODO
+                        switch (textoSeparado[1]) {
+                            case "inverte":
+                                streamToSend.append("jogada;").append(textoSeparado[1]).append(textoSeparado[2]);
+                                inverte();
+                                sendToNext(saida, streamToSend.toString(), jogador);
+                                break;
+                            case "bloquear":
+                                streamToSend.append("jogada;").append(textoSeparado[1]).append(textoSeparado[2]);
+                                sendToNext(saida, streamToSend.toString(), bloqueia());
+                                break;
+                            case "maisDois":
+                                streamToSend.append("pescar;");
+                                for (Carta c : pescar(2)) streamToSend.append(c.toString());
+                                sendToNext(saida, streamToSend.toString(), jogador);
+                                break;
+                            case "PescaQuatro":
+                                //TODO
+                                break;
+                            case "EscolheCor":
+                                //TODO
+                                break;
+                            default:
+                                //TODO
+                                break;
+                        }
+
                     }else if(ehInicial){
                         sendToJogador(saida, "comeca;", jogador);
                     }else{
@@ -100,7 +125,6 @@ public class Partida extends Thread {
             }
         }
     }
-
     private void sendToNext(PrintStream saida, String linha, Jogador jogador) throws IOException {
         if(jogadores.indexOf(jogador)+1 == jogadores.size()){
             PrintStream jogada = (PrintStream) jogadores.get(0).getSaida();
@@ -115,11 +139,9 @@ public class Partida extends Thread {
         for(int i =0; i<quant;i++) cartasPescadas.add(Baralho.baralho.pop());
         return cartasPescadas;
     }
-
     private void inverte(){
         Collections.reverse(jogadores);
     }
-
     private Jogador bloqueia(){
         if(jogadores.indexOf(jogador)+1 == jogadores.size()){
             return jogadores.get(0);
