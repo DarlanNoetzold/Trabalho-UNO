@@ -26,6 +26,8 @@ public class Partida extends Thread {
     private String nomeJogador;
 
     private boolean ehInicial;
+
+    private boolean jaPescou = false;
     
     private List<Jogador> ranking;
     public Partida(Jogador j, boolean ehInicial) {
@@ -73,18 +75,29 @@ public class Partida extends Thread {
                                 sendToNext(saida, streamToSend.toString(), bloqueia());
                                 break;
                             case "maisDois":
-                                streamToSend.append("pescar;");
-                                for (Carta c : pescar(2)) streamToSend.append(c.toString());
-                                sendToNext(saida, streamToSend.toString(), jogador);
+                                if(!jaPescou){
+                                    streamToSend.append("pescar;");
+                                    for (Carta c : pescar(2)) streamToSend.append(c.toString());
+                                    streamToSend.append(textoSeparado[1]).append(";").append(textoSeparado[2]).append(";");
+                                    sendToNext(saida, streamToSend.toString(), jogador);
+                                }else{
+                                    streamToSend.append("jogada;");
+                                    streamToSend.append(textoSeparado[1]).append(";").append(textoSeparado[2]).append(";");
+                                    sendToNext(saida, streamToSend.toString(), jogador);
+                                }
+                                jaPescou = !jaPescou;
                                 break;
                             case "PescaQuatro":
-                                //TODO
+                                streamToSend.append("pescar;");
+                                for (Carta c : pescar(4)) streamToSend.append(c.toString());
+                                streamToSend.append(textoSeparado[1]).append(";").append(textoSeparado[2]);
+                                sendToNext(saida, streamToSend.toString(), jogador);
                                 break;
                             case "EscolheCor":
-                                //TODO
-                                break;
                             default:
-                                //TODO
+                                streamToSend.append("jogada;");
+                                streamToSend.append(textoSeparado[1]).append(";").append(textoSeparado[2]).append(";");
+                                sendToNext(saida, streamToSend.toString(), jogador);
                                 break;
                         }
 
@@ -136,7 +149,7 @@ public class Partida extends Thread {
     }
     private List<Carta> pescar(int quant){
         List<Carta> cartasPescadas = new ArrayList<>();
-        for(int i =0; i<quant;i++) cartasPescadas.add(Baralho.baralho.pop());
+        for(int i =0; i<quant+1;i++) cartasPescadas.add(Baralho.baralho.pop());
         return cartasPescadas;
     }
     private void inverte(){
