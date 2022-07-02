@@ -69,10 +69,12 @@ public class Partida extends Thread {
                                 streamToSend.append("jogada;").append(textoSeparado[1]).append(textoSeparado[2]);
                                 inverte();
                                 sendToNext(saida, streamToSend.toString(), jogador);
+                                jogador.setPontuacao(jogador.getPontuacao() + 20);
                                 break;
                             case "bloquear":
                                 streamToSend.append("jogada;").append(textoSeparado[1]).append(textoSeparado[2]);
                                 sendToNext(saida, streamToSend.toString(), bloqueia());
+                                jogador.setPontuacao(jogador.getPontuacao() + 20);
                                 break;
                             case "maisDois":
                                 if(!jaPescou){
@@ -80,6 +82,7 @@ public class Partida extends Thread {
                                     for (Carta c : pescar(2)) streamToSend.append(c.toString());
                                     streamToSend.append(textoSeparado[1]).append(";").append(textoSeparado[2]).append(";");
                                     sendToNext(saida, streamToSend.toString(), jogador);
+                                    jogador.setPontuacao(jogador.getPontuacao() + 20);
                                 }else{
                                     streamToSend.append("jogada;");
                                     streamToSend.append(textoSeparado[1]).append(";").append(textoSeparado[2]).append(";");
@@ -92,12 +95,19 @@ public class Partida extends Thread {
                                 for (Carta c : pescar(4)) streamToSend.append(c.toString());
                                 streamToSend.append(textoSeparado[1]).append(";").append(textoSeparado[2]);
                                 sendToNext(saida, streamToSend.toString(), jogador);
+                                jogador.setPontuacao(jogador.getPontuacao() + 50);
                                 break;
                             case "EscolheCor":
+                                streamToSend.append("jogada;");
+                                streamToSend.append(textoSeparado[1]).append(";").append(textoSeparado[2]).append(";");
+                                sendToNext(saida, streamToSend.toString(), jogador);
+                                jogador.setPontuacao(jogador.getPontuacao() + 50);
+                                break;
                             default:
                                 streamToSend.append("jogada;");
                                 streamToSend.append(textoSeparado[1]).append(";").append(textoSeparado[2]).append(";");
                                 sendToNext(saida, streamToSend.toString(), jogador);
+                                jogador.setPontuacao(jogador.getPontuacao() + Integer.parseInt(textoSeparado[1]));
                                 break;
                         }
 
@@ -163,8 +173,9 @@ public class Partida extends Thread {
         }
     }
 
-    private void atualizaPontuacao(){
-        //TODO
+    private void atualizaRanking(){
+        ranking = jogadores;
+        ranking.sort((a, b) -> Integer.compare(b.getPontuacao(), a.getPontuacao()));
     }
 
     public static void main(String args[]) {
