@@ -37,12 +37,15 @@ public class JogadorNaPartida extends Thread {
             PrintStream saida = new PrintStream(conexao.getOutputStream());
             BufferedReader teclado= new BufferedReader(new InputStreamReader(System.in));
 
-            saida.println("pescarIni;7");
+            saida.println("pescarIni;8");
             String linha = entrada.readLine();
             pescar(linha.split(";"));
             linha = "";
             while (true) {
                 String[] textoSeparado = linha.split(";");
+                if(cartasNaMao.size() == 0){
+                    saida.println("ganhou;");
+                }
                 if(textoSeparado[0].equals("pescar")) {
                     pescar(textoSeparado);
                     saida.println("jogada;" + textoSeparado[textoSeparado.length - 2] + ';' + textoSeparado[textoSeparado.length - 1] + ';');
@@ -88,43 +91,53 @@ public class JogadorNaPartida extends Thread {
     }
 
     private void fazerJogada(String[] textoSeparado, PrintStream saida, BufferedReader teclado, boolean ehInicial) throws IOException {
+        boolean pescou = false;
         mostrarCartasNaMao();
         System.out.println("Digite o código da carta: ");
         int index = 0;
-        while(true){
+        do {
             try {
-                index = Integer.parseInt(teclado.readLine());
-                if(index > cartasNaMao.size()){
-                    System.out.println("Você não tem tantas cartas assim! Digite novamente..");
-                    index = -1;
+                String codCard = teclado.readLine();
+                if(codCard.equals("pescar")){
+                    pescou=true;
+                    saida.println("pescarIni;2");
+                    break;
+                }else {
+                    index = Integer.parseInt(codCard);
+                    if (index > cartasNaMao.size()) {
+                        System.out.println("Você não tem tantas cartas assim! Digite novamente..");
+                        index = -1;
+                    }
                 }
-            }catch (Exception e){
+            } catch (Exception e) {
                 System.out.println("Valor Inválido! >:( Digite um número positivo!");
                 index = -1;
             }
-            if(index != -1) break;
-        }
-        Carta cartaEscolhida =  cartasNaMao.get(index);
+        } while (index == -1);
+        if(!pescou) {
+            Carta cartaEscolhida =  cartasNaMao.get(index);
 
-        if (cartaEscolhida.getNome().equals("PescaQuatro") || cartaEscolhida.getNome().equals("EscolheCor")) {
-            if(!ehInicial) textoSeparado[1] = cartaEscolhida.getNome();
-            System.out.println("Escolha cor: ");
-            cartaEscolhida.setCor(teclado.readLine());
-            while(true) {
-                if (cartaEscolhida.getCor().equals("amarelo") || cartaEscolhida.getCor().equals("verde") || cartaEscolhida.getCor().equals("vermelho") || cartaEscolhida.getCor().equals("azul")) {
-                    break;
-                } else {
-                    System.out.println("Valor inválido, por favor digite: vermelho, verde, amarelo ou azul");
-                    cartaEscolhida.setCor(teclado.readLine());
+            if (cartaEscolhida.getNome().equals("PescaQuatro") || cartaEscolhida.getNome().equals("EscolheCor")) {
+                if(!ehInicial) textoSeparado[1] = cartaEscolhida.getNome();
+                System.out.println("Escolha cor: ");
+                cartaEscolhida.setCor(teclado.readLine());
+                while(true) {
+                    if (cartaEscolhida.getCor().equals("amarelo") || cartaEscolhida.getCor().equals("verde") || cartaEscolhida.getCor().equals("vermelho") || cartaEscolhida.getCor().equals("azul")) {
+                        break;
+                    } else {
+                        System.out.println("Valor inválido, por favor digite: vermelho, verde, amarelo ou azul");
+                        cartaEscolhida.setCor(teclado.readLine());
+                    }
                 }
             }
-        }
-        if (ehInicial || textoSeparado[1].equals(cartaEscolhida.getNome()) || textoSeparado[2].equals(cartaEscolhida.getCor())) {
-            saida.println("jogada;" + cartasNaMao.get(index).toString());
-            cartasNaMao.remove(index);
-        } else {
-            System.out.println("Esta carta não pode ser jogada!");
-            fazerJogada(textoSeparado, saida, teclado, false);
+
+            if (ehInicial || textoSeparado[1].equals(cartaEscolhida.getNome()) || textoSeparado[2].equals(cartaEscolhida.getCor())) {
+                saida.println("jogada;" + cartasNaMao.get(index).toString());
+                cartasNaMao.remove(index);
+            } else {
+                System.out.println("Esta carta não pode ser jogada!");
+                fazerJogada(textoSeparado, saida, teclado, false);
+            }
         }
     }
 

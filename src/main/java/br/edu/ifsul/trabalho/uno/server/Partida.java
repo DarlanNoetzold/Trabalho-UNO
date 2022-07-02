@@ -66,13 +66,15 @@ public class Partida extends Thread {
                         System.out.println(Arrays.toString(textoSeparado));
                         switch (textoSeparado[1]) {
                             case "inverte":
-                                streamToSend.append("jogada;").append(textoSeparado[1]).append(textoSeparado[2]);
+                                streamToSend.append("jogada;");
+                                streamToSend.append(textoSeparado[1]).append(";").append(textoSeparado[2]).append(";");
                                 inverte();
                                 sendToNext(saida, streamToSend.toString(), jogador);
                                 jogador.setPontuacao(jogador.getPontuacao() + 20);
                                 break;
                             case "bloquear":
-                                streamToSend.append("jogada;").append(textoSeparado[1]).append(textoSeparado[2]);
+                                streamToSend.append("jogada;");
+                                streamToSend.append(textoSeparado[1]).append(";").append(textoSeparado[2]).append(";");
                                 sendToNext(saida, streamToSend.toString(), bloqueia());
                                 jogador.setPontuacao(jogador.getPontuacao() + 20);
                                 break;
@@ -91,11 +93,18 @@ public class Partida extends Thread {
                                 jaPescou = !jaPescou;
                                 break;
                             case "PescaQuatro":
-                                streamToSend.append("pescar;");
-                                for (Carta c : pescar(4)) streamToSend.append(c.toString());
-                                streamToSend.append(textoSeparado[1]).append(";").append(textoSeparado[2]);
-                                sendToNext(saida, streamToSend.toString(), jogador);
-                                jogador.setPontuacao(jogador.getPontuacao() + 50);
+                                if(!jaPescou) {
+                                    streamToSend.append("pescar;");
+                                    for (Carta c : pescar(4)) streamToSend.append(c.toString());
+                                    streamToSend.append(textoSeparado[1]).append(";").append(textoSeparado[2]);
+                                    sendToNext(saida, streamToSend.toString(), jogador);
+                                    jogador.setPontuacao(jogador.getPontuacao() + 50);
+                                }else{
+                                    streamToSend.append("jogada;");
+                                    streamToSend.append(textoSeparado[1]).append(";").append(textoSeparado[2]).append(";");
+                                    sendToNext(saida, streamToSend.toString(), jogador);
+                                }
+                                jaPescou = !jaPescou;
                                 break;
                             case "EscolheCor":
                                 streamToSend.append("jogada;");
@@ -159,7 +168,7 @@ public class Partida extends Thread {
     }
     private List<Carta> pescar(int quant){
         List<Carta> cartasPescadas = new ArrayList<>();
-        for(int i =0; i<quant+1;i++) cartasPescadas.add(Baralho.baralho.pop());
+        for(int i =0; i<quant;i++) cartasPescadas.add(Baralho.baralho.pop());
         return cartasPescadas;
     }
     private void inverte(){
@@ -172,7 +181,6 @@ public class Partida extends Thread {
             return jogadores.get(jogadores.indexOf(jogador)+1);
         }
     }
-
     private void atualizaRanking(){
         ranking = jogadores;
         ranking.sort((a, b) -> Integer.compare(b.getPontuacao(), a.getPontuacao()));
