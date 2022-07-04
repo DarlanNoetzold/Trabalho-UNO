@@ -79,11 +79,11 @@ public class Partida extends Thread {
                             jogador.setPontuacao(jogador.getPontuacao() + 20);
                         } else if ("maisDois".equals(textoSeparado[1])) {
                             if (!jaPescou) {
+                                jogador.setPontuacao(jogador.getPontuacao() + 20);
                                 streamToSend.append("pescar;");
                                 for (Carta c : pescar(2)) streamToSend.append(c.toString());
                                 streamToSend.append(textoSeparado[1]).append(";").append(textoSeparado[2]).append(";");
                                 sendToNext(saida, streamToSend.toString(), jogador);
-                                jogador.setPontuacao(jogador.getPontuacao() + 20);
                             } else {
                                 streamToSend.append("jogada;");
                                 streamToSend.append(textoSeparado[1]).append(";").append(textoSeparado[2]).append(";");
@@ -92,11 +92,11 @@ public class Partida extends Thread {
                             jaPescou = !jaPescou;
                         } else if ("PescaQuatro".equals(textoSeparado[1])) {
                             if (!jaPescou) {
+                                jogador.setPontuacao(jogador.getPontuacao() + 20);
                                 streamToSend.append("pescar;");
                                 for (Carta c : pescar(4)) streamToSend.append(c.toString());
                                 streamToSend.append(textoSeparado[1]).append(";").append(textoSeparado[2]).append(";");
                                 sendToNext(saida, streamToSend.toString(), jogador);
-                                jogador.setPontuacao(jogador.getPontuacao() + 20);
                             } else {
                                 streamToSend.append("jogada;");
                                 streamToSend.append(textoSeparado[1]).append(";").append(textoSeparado[2]).append(";");
