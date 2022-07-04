@@ -32,6 +32,7 @@ public class Partida extends Thread {
     private List<Jogador> ranking;
     public Partida(Jogador j, boolean ehInicial) {
         this.ehInicial = ehInicial;
+        conexao = j.getSocket();
         jogador = j;
     }
 
@@ -64,72 +65,81 @@ public class Partida extends Thread {
                         sendToNext(saida, streamToSend.toString(), jogador);
                     }else if (Objects.equals(textoSeparado[0], "jogada")) {
                         System.out.println(Arrays.toString(textoSeparado));
-                        switch (textoSeparado[1]) {
-                            case "inverte":
-                                streamToSend.append("jogada;");
+                        if ("inverte".equals(textoSeparado[1])) {
+                            streamToSend.append("jogada;");
+                            streamToSend.append(textoSeparado[1]).append(";").append(textoSeparado[2]).append(";");
+                            inverte();
+                            if (jogadores.size() == 2) sendToNext(saida, streamToSend.toString(), bloqueia());
+                            else sendToNext(saida, streamToSend.toString(), jogador);
+                            jogador.setPontuacao(jogador.getPontuacao() + 20);
+                        } else if ("bloquear".equals(textoSeparado[1])) {
+                            streamToSend.append("jogada;");
+                            streamToSend.append(textoSeparado[1]).append(";").append(textoSeparado[2]).append(";");
+                            sendToNext(saida, streamToSend.toString(), bloqueia());
+                            jogador.setPontuacao(jogador.getPontuacao() + 20);
+                        } else if ("maisDois".equals(textoSeparado[1])) {
+                            if (!jaPescou) {
+                                streamToSend.append("pescar;");
+                                for (Carta c : pescar(2)) streamToSend.append(c.toString());
                                 streamToSend.append(textoSeparado[1]).append(";").append(textoSeparado[2]).append(";");
-                                inverte();
                                 sendToNext(saida, streamToSend.toString(), jogador);
                                 jogador.setPontuacao(jogador.getPontuacao() + 20);
-                                break;
-                            case "bloquear":
+                            } else {
                                 streamToSend.append("jogada;");
                                 streamToSend.append(textoSeparado[1]).append(";").append(textoSeparado[2]).append(";");
-                                sendToNext(saida, streamToSend.toString(), bloqueia());
+                                sendToNext(saida, streamToSend.toString(), jogador);
+                            }
+                            jaPescou = !jaPescou;
+                        } else if ("PescaQuatro".equals(textoSeparado[1])) {
+                            if (!jaPescou) {
+                                streamToSend.append("pescar;");
+                                for (Carta c : pescar(4)) streamToSend.append(c.toString());
+                                streamToSend.append(textoSeparado[1]).append(";").append(textoSeparado[2]).append(";");
+                                sendToNext(saida, streamToSend.toString(), jogador);
                                 jogador.setPontuacao(jogador.getPontuacao() + 20);
-                                break;
-                            case "maisDois":
-                                if(!jaPescou){
-                                    streamToSend.append("pescar;");
-                                    for (Carta c : pescar(2)) streamToSend.append(c.toString());
-                                    streamToSend.append(textoSeparado[1]).append(";").append(textoSeparado[2]).append(";");
-                                    sendToNext(saida, streamToSend.toString(), jogador);
-                                    jogador.setPontuacao(jogador.getPontuacao() + 20);
-                                }else{
-                                    streamToSend.append("jogada;");
-                                    streamToSend.append(textoSeparado[1]).append(";").append(textoSeparado[2]).append(";");
-                                    sendToNext(saida, streamToSend.toString(), jogador);
-                                }
-                                jaPescou = !jaPescou;
-                                break;
-                            case "PescaQuatro":
-                                if(!jaPescou) {
-                                    streamToSend.append("pescar;");
-                                    for (Carta c : pescar(4)) streamToSend.append(c.toString());
-                                    streamToSend.append(textoSeparado[1]).append(";").append(textoSeparado[2]);
-                                    sendToNext(saida, streamToSend.toString(), jogador);
-                                    jogador.setPontuacao(jogador.getPontuacao() + 50);
-                                }else{
-                                    streamToSend.append("jogada;");
-                                    streamToSend.append(textoSeparado[1]).append(";").append(textoSeparado[2]).append(";");
-                                    sendToNext(saida, streamToSend.toString(), jogador);
-                                }
-                                jaPescou = !jaPescou;
-                                break;
-                            case "EscolheCor":
+                            } else {
                                 streamToSend.append("jogada;");
                                 streamToSend.append(textoSeparado[1]).append(";").append(textoSeparado[2]).append(";");
                                 sendToNext(saida, streamToSend.toString(), jogador);
-                                jogador.setPontuacao(jogador.getPontuacao() + 50);
-                                break;
-                            default:
-                                streamToSend.append("jogada;");
-                                streamToSend.append(textoSeparado[1]).append(";").append(textoSeparado[2]).append(";");
-                                sendToNext(saida, streamToSend.toString(), jogador);
-                                jogador.setPontuacao(jogador.getPontuacao() + Integer.parseInt(textoSeparado[1]));
-                                break;
+                            }
+                            jaPescou = !jaPescou;
+                        } else if ("EscolheCor".equals(textoSeparado[1])) {
+                            streamToSend.append("jogada;");
+                            streamToSend.append(textoSeparado[1]).append(";").append(textoSeparado[2]).append(";");
+                            sendToNext(saida, streamToSend.toString(), jogador);
+                            jogador.setPontuacao(jogador.getPontuacao() + 50);
+                        } else {
+                            streamToSend.append("jogada;");
+                            streamToSend.append(textoSeparado[1]).append(";").append(textoSeparado[2]).append(";");
+                            sendToNext(saida, streamToSend.toString(), jogador);
+                            jogador.setPontuacao(jogador.getPontuacao() + Integer.parseInt(textoSeparado[1]));
                         }
 
-                    }else if(ehInicial){
-                        sendToJogador(saida, "comeca;", jogador);
-                    }else{
-                        //just testing
-                        //streamToSend.append("jogada");
-                        //streamToSend.append(linha);
-                        //sendToAll(saida, " disse: ",streamToSend.toString());
-                    }
+                    }else if(Objects.equals(textoSeparado[0], "ganhou")){
+                        atualizaRanking();
+                        System.out.println("O jogador " + jogador.getNome() + " ganhou!!" + " Pontição de: " + jogador.getPontuacao());
+                        sendToAll(saida, "","ganhou;O jogador " + jogador.getNome() + " ganhou!!" + " Pontição de: " + jogador.getPontuacao() + ";");
+                        ranking.forEach(jogador -> System.out.println(jogador.getNome()));
 
-                }else sendToAll(saida, " disse: ", linha);
+                        break;
+                    }else if(Objects.equals(textoSeparado[0], "PescarEsc")){
+                        if(!jaPescou) {
+                            streamToSend.append("PescarEsc;");
+                            for (Carta c : pescar(Integer.parseInt(textoSeparado[1]))) streamToSend.append(c.toString());
+                            streamToSend.append(textoSeparado[2]).append(";").append(textoSeparado[3]).append(";");
+                            sendToJogador(saida, streamToSend.toString(), jogador);
+                        }else{
+                            streamToSend.append("jogada;");
+                            streamToSend.append(textoSeparado[2]).append(";").append(textoSeparado[3]).append(";");
+                            sendToNext(saida, streamToSend.toString(), jogador);
+                        }
+                        jaPescou = !jaPescou;
+                    }else if(ehInicial){
+                        streamToSend.append("jogada;");
+                        for (Carta c : pescar(1)) streamToSend.append(c.toString());
+                        sendToJogador(saida, streamToSend.toString(), jogador);
+                    }
+                }
                 linha = entrada.readLine();
             }
 
@@ -147,13 +157,13 @@ public class Partida extends Thread {
         }
     }
     private void sendToAll(PrintStream saida, String acao,
-            String linha) throws IOException {
+                           String linha) throws IOException {
         Iterator<Jogador> iter = jogadores.iterator();
         while (iter.hasNext()) {
             Jogador outroCliente = iter.next();
             PrintStream chat = (PrintStream) outroCliente.getSaida();
             if (chat != saida) {
-                chat.println(jogador.getNome() + acao + linha);
+                chat.println(jogador.getNome() + linha);
             }
         }
     }

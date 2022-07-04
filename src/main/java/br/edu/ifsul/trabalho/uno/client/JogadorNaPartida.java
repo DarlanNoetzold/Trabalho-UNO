@@ -24,6 +24,7 @@ public class JogadorNaPartida extends Thread {
 
     private Socket conexao;
 
+
     private boolean initFlag = true;
     private List<Carta> cartasNaMao;
     public JogadorNaPartida(Socket s) {
@@ -37,7 +38,7 @@ public class JogadorNaPartida extends Thread {
             PrintStream saida = new PrintStream(conexao.getOutputStream());
             BufferedReader teclado= new BufferedReader(new InputStreamReader(System.in));
 
-            saida.println("pescarIni;8");
+            saida.println("pescarIni;8;");
             String linha = entrada.readLine();
             pescar(linha.split(";"));
             linha = "";
@@ -45,21 +46,25 @@ public class JogadorNaPartida extends Thread {
                 String[] textoSeparado = linha.split(";");
                 if(cartasNaMao.size() == 0){
                     saida.println("ganhou;");
+                    break;
                 }
-                if(textoSeparado[0].equals("pescar")) {
+                if(textoSeparado[0].equals("PescarEsc")){
+                    pescar(textoSeparado);
+                    saida.println("PescarEsc;jogada;" + textoSeparado[textoSeparado.length - 2] + ';' + textoSeparado[textoSeparado.length - 1] + ';');
+                }else if(textoSeparado[0].equals("pescar")) {
                     pescar(textoSeparado);
                     saida.println("jogada;" + textoSeparado[textoSeparado.length - 2] + ';' + textoSeparado[textoSeparado.length - 1] + ';');
-                }else if(textoSeparado[0].equals("comeca")){
-                    System.out.println("Sua vez!");
-                    fazerJogada(textoSeparado, saida, teclado, true);
                 }else if(textoSeparado[0].equals("jogada")){
-                    System.out.println("Sua vez! A carta no topo é: " + textoSeparado[1] + " " + textoSeparado[2]);
-                    fazerJogada(textoSeparado, saida, teclado, false);
+                    if(textoSeparado.length == 2) System.out.println("Sua vez! A carta no topo é: " + textoSeparado[1]);
+                    else System.out.println("Sua vez! A carta no topo é: " + textoSeparado[1] + " " + textoSeparado[2]);
+                    fazerJogada(textoSeparado, saida, teclado);
                 }else if(initFlag){
                     System.out.println("No aguardo para o primeiro jogador apertar enter...");
                     teclado.readLine();
                     initFlag=false;
                     saida.println("inicio");
+                }else if(textoSeparado[0].equals("ganhou")){
+                    System.out.println("Alguem ganhou: "+textoSeparado[1]);
                 }
 
                 if (done) {
@@ -86,31 +91,35 @@ public class JogadorNaPartida extends Thread {
     }
 
     private void pescar(String[] textoSeparado){
-        for (int i = 1; i < textoSeparado.length - 3; i = i + 2)
+        for (int i = 1; i < textoSeparado.length - 2; i = i + 2)
             cartasNaMao.add(new Carta(textoSeparado[i], textoSeparado[i + 1]));
     }
 
-    private void fazerJogada(String[] textoSeparado, PrintStream saida, BufferedReader teclado, boolean ehInicial) throws IOException {
+    private void fazerJogada(String[] textoSeparado, PrintStream saida, BufferedReader teclado) throws IOException {
         boolean pescou = false;
+        boolean falouUno= false;
         mostrarCartasNaMao();
         System.out.println("Digite o código da carta: ");
-        int index = 0;
+        int index = -1;
         do {
             try {
                 String codCard = teclado.readLine();
-                if(codCard.equals("pescar")){
-                    pescou=true;
-                    saida.println("pescarIni;2");
+                if(codCard.equals("pescar")) {
+                    pescou = true;
+                    saida.println("PescarEsc;1;" + textoSeparado[1] + ";" + textoSeparado[2] + ";");
                     break;
+                }else if(codCard.equals("uno")){
+                    falouUno = true;
+                    System.out.println("Digite o codigo da carta: ");
                 }else {
                     index = Integer.parseInt(codCard);
-                    if (index > cartasNaMao.size()) {
+                    if (index >= cartasNaMao.size()) {
                         System.out.println("Você não tem tantas cartas assim! Digite novamente..");
                         index = -1;
                     }
                 }
             } catch (Exception e) {
-                System.out.println("Valor Inválido! >:( Digite um número positivo!");
+                System.out.println("Valor Inválido! >:( Digite um número positivo!" + e.getMessage());
                 index = -1;
             }
         } while (index == -1);
@@ -118,7 +127,7 @@ public class JogadorNaPartida extends Thread {
             Carta cartaEscolhida =  cartasNaMao.get(index);
 
             if (cartaEscolhida.getNome().equals("PescaQuatro") || cartaEscolhida.getNome().equals("EscolheCor")) {
-                if(!ehInicial) textoSeparado[1] = cartaEscolhida.getNome();
+                textoSeparado[1] = cartaEscolhida.getNome();
                 System.out.println("Escolha cor: ");
                 cartaEscolhida.setCor(teclado.readLine());
                 while(true) {
@@ -131,12 +140,19 @@ public class JogadorNaPartida extends Thread {
                 }
             }
 
-            if (ehInicial || textoSeparado[1].equals(cartaEscolhida.getNome()) || textoSeparado[2].equals(cartaEscolhida.getCor())) {
-                saida.println("jogada;" + cartasNaMao.get(index).toString());
-                cartasNaMao.remove(index);
+            if ((textoSeparado.length == 2) || (textoSeparado[1].equals(cartaEscolhida.getNome()) || textoSeparado[2].equals(cartaEscolhida.getCor()))) {
+                if((cartasNaMao.size() == 2) && !falouUno){
+                    System.out.println("Você não falou UNO, pesque duas cartas.");
+                    saida.println("PescarEsc;2;" + cartasNaMao.get(index).toString());
+                    cartasNaMao.remove(index);
+                }else {
+                    saida.println("jogada;" + cartasNaMao.get(index).toString());
+                    cartasNaMao.remove(index);
+                }
+
             } else {
                 System.out.println("Esta carta não pode ser jogada!");
-                fazerJogada(textoSeparado, saida, teclado, false);
+                fazerJogada(textoSeparado, saida, teclado);
             }
         }
     }
