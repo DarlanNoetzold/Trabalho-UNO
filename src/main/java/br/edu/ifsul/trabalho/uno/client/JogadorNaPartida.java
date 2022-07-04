@@ -23,8 +23,6 @@ public class JogadorNaPartida extends Thread {
     private static boolean done = false;
 
     private Socket conexao;
-
-
     private boolean initFlag = true;
     private List<Carta> cartasNaMao;
     public JogadorNaPartida(Socket s) {
