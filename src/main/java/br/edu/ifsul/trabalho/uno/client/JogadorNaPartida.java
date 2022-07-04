@@ -68,10 +68,6 @@ public class JogadorNaPartida extends Thread {
                 if (done) {
                     break;
                 }
-                if (linha == null) {
-                    System.out.println("Conexão encerrada!");
-                    break;
-                }
 
                 linha = entrada.readLine();
             }
@@ -123,34 +119,41 @@ public class JogadorNaPartida extends Thread {
         } while (index == -1);
         if(!pescou) {
             Carta cartaEscolhida =  cartasNaMao.get(index);
+            escolheCor(textoSeparado, teclado, cartaEscolhida);
 
-            if (cartaEscolhida.getNome().equals("PescaQuatro") || cartaEscolhida.getNome().equals("EscolheCor")) {
-                textoSeparado[1] = cartaEscolhida.getNome();
-                System.out.println("Escolha cor: ");
-                cartaEscolhida.setCor(teclado.readLine());
-                while(true) {
-                    if (cartaEscolhida.getCor().equals("amarelo") || cartaEscolhida.getCor().equals("verde") || cartaEscolhida.getCor().equals("vermelho") || cartaEscolhida.getCor().equals("azul")) {
-                        break;
-                    } else {
-                        System.out.println("Valor inválido, por favor digite: vermelho, verde, amarelo ou azul");
-                        cartaEscolhida.setCor(teclado.readLine());
-                    }
-                }
+            verificaCarta(textoSeparado, index, cartaEscolhida, saida, teclado, falouUno);
+        }
+    }
+
+    public void verificaCarta(String[] textoSeparado, int index, Carta cartaEscolhida, PrintStream saida, BufferedReader teclado, boolean falouUno) throws IOException {
+        if ((textoSeparado.length == 2) || (textoSeparado[1].equals(cartaEscolhida.getNome()) || textoSeparado[2].equals(cartaEscolhida.getCor()))) {
+            if((cartasNaMao.size() == 2) && !falouUno){
+                System.out.println("Você não falou UNO, pesque duas cartas.");
+                saida.println("PescarEsc;2;" + cartasNaMao.get(index).toString());
+                cartasNaMao.remove(index);
+            }else {
+                saida.println("jogada;" + cartasNaMao.get(index).toString());
+                cartasNaMao.remove(index);
             }
 
-            if ((textoSeparado.length == 2) || (textoSeparado[1].equals(cartaEscolhida.getNome()) || textoSeparado[2].equals(cartaEscolhida.getCor()))) {
-                if((cartasNaMao.size() == 2) && !falouUno){
-                    System.out.println("Você não falou UNO, pesque duas cartas.");
-                    saida.println("PescarEsc;2;" + cartasNaMao.get(index).toString());
-                    cartasNaMao.remove(index);
-                }else {
-                    saida.println("jogada;" + cartasNaMao.get(index).toString());
-                    cartasNaMao.remove(index);
-                }
+        } else {
+            System.out.println("Esta carta não pode ser jogada!");
+            fazerJogada(textoSeparado, saida, teclado);
+        }
+    }
 
-            } else {
-                System.out.println("Esta carta não pode ser jogada!");
-                fazerJogada(textoSeparado, saida, teclado);
+    public void escolheCor(String[] textoSeparado, BufferedReader teclado, Carta cartaEscolhida) throws IOException {
+        if (cartaEscolhida.getNome().equals("PescaQuatro") || cartaEscolhida.getNome().equals("EscolheCor")) {
+            textoSeparado[1] = cartaEscolhida.getNome();
+            System.out.println("Escolha cor: ");
+            cartaEscolhida.setCor(teclado.readLine());
+            while(true) {
+                if (cartaEscolhida.getCor().equals("amarelo") || cartaEscolhida.getCor().equals("verde") || cartaEscolhida.getCor().equals("vermelho") || cartaEscolhida.getCor().equals("azul")) {
+                    break;
+                } else {
+                    System.out.println("Valor inválido, por favor digite: vermelho, verde, amarelo ou azul");
+                    cartaEscolhida.setCor(teclado.readLine());
+                }
             }
         }
     }
