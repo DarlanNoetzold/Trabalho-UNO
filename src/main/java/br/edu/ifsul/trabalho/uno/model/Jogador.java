@@ -9,8 +9,10 @@ import java.net.Socket;
 import java.util.List;
 
 /**
- *
- * @author 20201PF.CC0149
+ * Classe modelo do jogador.
+ * @author Darlan Noetzold
+ * @author Jakelyny Sousa de Araujo
+ * @version 1.0
  */
 public class Jogador {
     private String id;
@@ -19,7 +21,6 @@ public class Jogador {
     private PrintStream saida;
     private Socket socket;
     private int pontuacao;
-    private String jogada;
 
     public Jogador(List<Carta> cartasNaMao) {
         this.pontuacao = 0;
@@ -73,13 +74,4 @@ public class Jogador {
         this.pontuacao = pontuacao;
     }
 
-    public String getJogada() {
-        return jogada;
-    }
-
-    public void setJogada(String jogada) {
-        this.jogada = jogada;
-    }
-    
-    
 }

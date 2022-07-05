@@ -1,12 +1,22 @@
 package br.edu.ifsul.trabalho.uno.model;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Stack;
 
+/**
+ * Classe resposável por criar e armazenar as cartas do baralho do jogo.
+ * @author Darlan Noetzold
+ * @author Jakelyny Sousa de Araujo
+ * @version 1.0
+ */
 public class Baralho {
     public static Stack<Carta> baralho;
 
+    /**
+     * <p> Metodo que ira alimentar o baralho com as cartas do UNO e embaralhar.
+     * </p>
+     * @since 1.0
+     */
     public Baralho() {
         baralho = new Stack<>();
         for(int i = 0; i < 9;i++){

@@ -5,8 +5,10 @@
 package br.edu.ifsul.trabalho.uno.model;
 
 /**
- *
- * @author 20201PF.CC0149
+ * Classe modelo de uma carta de UNO.
+ * @author Darlan Noetzold
+ * @author Jakelyny Sousa de Araujo
+ * @version 1.0
  */
 public class Carta {
     

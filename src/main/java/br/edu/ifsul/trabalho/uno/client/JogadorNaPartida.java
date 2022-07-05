@@ -15,8 +15,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- *
- * @author 20201PF.CC0149
+ * Classe resposável por controlar cada Jogador e conectar ao servidor.
+ * @author Darlan Noetzold
+ * @author Jakelyny Sousa de Araujo
+ * @version 1.0
  */
 public class JogadorNaPartida extends Thread {
 
@@ -29,7 +31,11 @@ public class JogadorNaPartida extends Thread {
         cartasNaMao = new ArrayList<>();
         conexao = s;
     }
-
+    /**
+     * <p> Metodo que fica escutando jogadas do servidor, alem de enviar jogadas para o servidor.
+     * </p>
+     * @since 1.0
+     */
     public void run() {
         try {
             BufferedReader entrada = new BufferedReader(new InputStreamReader(conexao.getInputStream()));
@@ -76,19 +82,35 @@ public class JogadorNaPartida extends Thread {
         }
         done = true;
     }
-
+    /**
+     * <p> Metodo que mostra as cartas da mao do jogador.
+     * </p>
+     * @since 1.0
+     */
     private void mostrarCartasNaMao(){
         for (int i = 0; i < cartasNaMao.size(); i++) {
             System.out.print(" | "+i + " - " + cartasNaMao.get(i).toString());
         }
         System.out.println("\n");
     }
-
+    /**
+     * <p> Metodo que pesca as cartas enviadas do baralho do servidor.
+     * </p>
+     * @param textoSeparado - cartas enviadas pelo servidor.
+     * @since 1.0
+     */
     private void pescar(String[] textoSeparado){
         for (int i = 1; i < textoSeparado.length - 2; i = i + 2)
             cartasNaMao.add(new Carta(textoSeparado[i], textoSeparado[i + 1]));
     }
-
+    /**
+     * <p> Metodo resposavel pelas escolhas do jogador na jogada.
+     * </p>
+     * @param textoSeparado - cartas enviadas pelo servidor.
+     * @param saida - stream para enviar a jogada.
+     * @param teclado - reader que escuta o que o jogador escreve.
+     * @since 1.0
+     */
     private void fazerJogada(String[] textoSeparado, PrintStream saida, BufferedReader teclado) throws IOException {
         boolean pescou = false;
         boolean falouUno= false;
@@ -125,6 +147,17 @@ public class JogadorNaPartida extends Thread {
         }
     }
 
+    /**
+     * <p> Metodo que verifica a carta escolhida pelo jogador e envia a jogada ou volta para o jogador refazer a jogada.
+     * </p>
+     * @param textoSeparado - cartas enviadas pelo servidor.
+     * @param saida - stream para enviar a jogada.
+     * @param teclado - reader que escuta o que o jogador escreve.
+     * @param cartaEscolhida - carta escolhida pelo jogador.
+     * @param index - indice da carta escolhida.
+     * @param falouUno - flag que verifica se o usuario falou uno.
+     * @since 1.0
+     */
     public void verificaCarta(String[] textoSeparado, int index, Carta cartaEscolhida, PrintStream saida, BufferedReader teclado, boolean falouUno) throws IOException {
         if ((textoSeparado.length == 2) || (textoSeparado[1].equals(cartaEscolhida.getNome()) || textoSeparado[2].equals(cartaEscolhida.getCor()))) {
             if((cartasNaMao.size() == 2) && !falouUno){
@@ -142,6 +175,14 @@ public class JogadorNaPartida extends Thread {
         }
     }
 
+    /**
+     * <p> Metodo que implementa a logica da escolha de cor do jogador.
+     * </p>
+     * @param textoSeparado - cartas enviadas pelo servidor.
+     * @param teclado - reader que escuta o que o jogador escreve.
+     * @param cartaEscolhida - carta escolhida pelo jogador.
+     * @since 1.0
+     */
     public void escolheCor(String[] textoSeparado, BufferedReader teclado, Carta cartaEscolhida) throws IOException {
         if (cartaEscolhida.getNome().equals("PescaQuatro") || cartaEscolhida.getNome().equals("EscolheCor")) {
             textoSeparado[1] = cartaEscolhida.getNome();
@@ -157,7 +198,11 @@ public class JogadorNaPartida extends Thread {
             }
         }
     }
-
+    /**
+     * <p> Metodo resposavel pela inicializacao do jogador, conexao com o servidor e criacao da thread que ira escutar e enviar jogadas.
+     * </p>
+     * @since 1.0
+     */
     public static void main(String[] args) {
         try {
             Socket conexao = new Socket("127.0.0.1", 2222);

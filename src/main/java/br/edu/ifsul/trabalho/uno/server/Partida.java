@@ -12,22 +12,24 @@ import java.net.Socket;
 import java.util.*;
 
 /**
- *
- * @author 20201PF.CC0149
+ * Classe resposável pelo controle do servidor e das regras do jogo.
+ * @author Darlan Noetzold
+ * @author Jakelyny Sousa de Araujo
+ * @version 1.0
  */
 public class Partida extends Thread {
 
     private static List<Jogador> jogadores;
 
-    private Jogador jogador;
+    private final Jogador jogador;
 
-    private Socket conexao;
+    private final Socket conexao;
 
-    private String nomeJogador;
-
-    private boolean ehInicial;
+    private final boolean ehInicial;
 
     private boolean jaPescou = false;
+
+    private static boolean jogoComecou = false;
     
     private List<Jogador> ranking;
     public Partida(Jogador j, boolean ehInicial) {
@@ -35,14 +37,18 @@ public class Partida extends Thread {
         conexao = j.getSocket();
         jogador = j;
     }
-
+    /**
+     * <p> Metodo que ira executar a Thread, responsavel por enviar uma jogada para a partida e
+     * </p>
+     * @since 1.0
+     */
     public void run() {
         try {
             BufferedReader entrada = new BufferedReader(new InputStreamReader(jogador.getSocket().getInputStream()));
             PrintStream saida = new PrintStream(jogador.getSocket().getOutputStream());
             jogador.setSaida(saida);
-            
-            nomeJogador = entrada.readLine();
+
+            String nomeJogador = entrada.readLine();
 
             if (nomeJogador == null) {
                 return;
@@ -58,86 +64,36 @@ public class Partida extends Thread {
                     if (Objects.equals(textoSeparado[0], "pescarIni")) {
                         streamToSend.append("pescar;");
                         for (Carta c : pescar(Integer.parseInt(textoSeparado[1]))) streamToSend.append(c.toString());
-                        sendToJogador(saida, streamToSend.toString(), jogador);
+                        sendToJogador(saida, streamToSend.toString());
                     }else if (Objects.equals(textoSeparado[0], "pescar")) {
                         streamToSend.append("pescar;");
                         for (Carta c : pescar(Integer.parseInt(textoSeparado[1]))) streamToSend.append(c.toString());
-                        sendToNext(saida, streamToSend.toString(), jogador);
+                        sendToNext(streamToSend.toString(), jogador);
                     }else if (Objects.equals(textoSeparado[0], "jogada")) {
                         System.out.println(Arrays.toString(textoSeparado));
                         if ("inverte".equals(textoSeparado[1])) {
-                            streamToSend.append("jogada;");
-                            streamToSend.append(textoSeparado[1]).append(";").append(textoSeparado[2]).append(";");
-                            inverte();
-                            if (jogadores.size() == 2) sendToNext(saida, streamToSend.toString(), bloqueia());
-                            else sendToNext(saida, streamToSend.toString(), jogador);
-                            jogador.setPontuacao(jogador.getPontuacao() + 20);
+                            inverter(streamToSend, textoSeparado);
                         } else if ("bloquear".equals(textoSeparado[1])) {
-                            streamToSend.append("jogada;");
-                            streamToSend.append(textoSeparado[1]).append(";").append(textoSeparado[2]).append(";");
-                            sendToNext(saida, streamToSend.toString(), bloqueia());
-                            jogador.setPontuacao(jogador.getPontuacao() + 20);
+                            bloquear(streamToSend, textoSeparado);
                         } else if ("maisDois".equals(textoSeparado[1])) {
-                            if (!jaPescou) {
-                                jogador.setPontuacao(jogador.getPontuacao() + 20);
-                                streamToSend.append("pescar;");
-                                for (Carta c : pescar(2)) streamToSend.append(c.toString());
-                                streamToSend.append(textoSeparado[1]).append(";").append(textoSeparado[2]).append(";");
-                                sendToNext(saida, streamToSend.toString(), jogador);
-                            } else {
-                                streamToSend.append("jogada;");
-                                streamToSend.append(textoSeparado[1]).append(";").append(textoSeparado[2]).append(";");
-                                sendToNext(saida, streamToSend.toString(), jogador);
-                            }
-                            jaPescou = !jaPescou;
+                            maisDois(streamToSend, textoSeparado);
                         } else if ("PescaQuatro".equals(textoSeparado[1])) {
-                            if (!jaPescou) {
-                                jogador.setPontuacao(jogador.getPontuacao() + 20);
-                                streamToSend.append("pescar;");
-                                for (Carta c : pescar(4)) streamToSend.append(c.toString());
-                                streamToSend.append(textoSeparado[1]).append(";").append(textoSeparado[2]).append(";");
-                                sendToNext(saida, streamToSend.toString(), jogador);
-                            } else {
-                                streamToSend.append("jogada;");
-                                streamToSend.append(textoSeparado[1]).append(";").append(textoSeparado[2]).append(";");
-                                sendToNext(saida, streamToSend.toString(), jogador);
-                            }
-                            jaPescou = !jaPescou;
+                            pescarQuatro(streamToSend, textoSeparado);
                         } else if ("EscolheCor".equals(textoSeparado[1])) {
-                            streamToSend.append("jogada;");
-                            streamToSend.append(textoSeparado[1]).append(";").append(textoSeparado[2]).append(";");
-                            sendToNext(saida, streamToSend.toString(), jogador);
-                            jogador.setPontuacao(jogador.getPontuacao() + 50);
+                            escolheCor(streamToSend, textoSeparado);
                         } else {
-                            streamToSend.append("jogada;");
-                            streamToSend.append(textoSeparado[1]).append(";").append(textoSeparado[2]).append(";");
-                            sendToNext(saida, streamToSend.toString(), jogador);
-                            jogador.setPontuacao(jogador.getPontuacao() + Integer.parseInt(textoSeparado[1]));
+                            jogadaNormal(streamToSend, textoSeparado);
                         }
-
                     }else if(Objects.equals(textoSeparado[0], "ganhou")){
-                        atualizaRanking();
-                        System.out.println("O jogador " + jogador.getNome() + " ganhou!!" + " Pontição de: " + jogador.getPontuacao());
-                        sendToAll(saida, "","ganhou;O jogador " + jogador.getNome() + " ganhou!!" + " Pontição de: " + jogador.getPontuacao() + ";");
-                        ranking.forEach(jogador -> System.out.println(jogador.getNome()));
-
+                        jogadorGanhou(saida);
                         break;
                     }else if(Objects.equals(textoSeparado[0], "PescarEsc")){
-                        if(!jaPescou) {
-                            streamToSend.append("PescarEsc;");
-                            for (Carta c : pescar(Integer.parseInt(textoSeparado[1]))) streamToSend.append(c.toString());
-                            streamToSend.append(textoSeparado[2]).append(";").append(textoSeparado[3]).append(";");
-                            sendToJogador(saida, streamToSend.toString(), jogador);
-                        }else{
-                            streamToSend.append("jogada;");
-                            streamToSend.append(textoSeparado[2]).append(";").append(textoSeparado[3]).append(";");
-                            sendToNext(saida, streamToSend.toString(), jogador);
-                        }
-                        jaPescou = !jaPescou;
+                        pescarPorEscolha(streamToSend, saida, textoSeparado, jogador);
                     }else if(ehInicial){
                         streamToSend.append("jogada;");
                         for (Carta c : pescar(1)) streamToSend.append(c.toString());
-                        sendToJogador(saida, streamToSend.toString(), jogador);
+                        sendToJogador(saida, streamToSend.toString());
+                        jogoComecou = true;
                     }
                 }
                 linha = entrada.readLine();
@@ -150,24 +106,178 @@ public class Partida extends Thread {
         }
     }
 
-    private void sendToJogador(PrintStream saida, String linha, Jogador jogador){
-        PrintStream jogada = (PrintStream) jogador.getSaida();
-        if (jogada == saida) {
-            jogada.println(linha);
-        }
+    /**
+     * <p> Metodo que implementa a logica da carta Inverte.
+     * </p>
+     * @param streamToSend - jogada que sera enviada para o proximo jogador.
+     * @param textoSeparado - jogada que chegou de algum jogador
+     * @since 1.0
+     */
+    private void inverter(StringBuilder streamToSend, String[] textoSeparado) throws IOException {
+        streamToSend.append("jogada;");
+        streamToSend.append(textoSeparado[1]).append(";").append(textoSeparado[2]).append(";");
+        Collections.reverse(jogadores);
+        if (jogadores.size() == 2) sendToNext(streamToSend.toString(), bloqueia());
+        else sendToNext(streamToSend.toString(), jogador);
+        jogador.setPontuacao(jogador.getPontuacao() + 20);
     }
-    private void sendToAll(PrintStream saida, String acao,
-                           String linha) throws IOException {
-        Iterator<Jogador> iter = jogadores.iterator();
-        while (iter.hasNext()) {
-            Jogador outroCliente = iter.next();
+
+    /**
+     * <p> Metodo que implementa a logica da carta Bloqueia.
+     * </p>
+     * @param streamToSend - jogada que sera enviada para o proximo jogador.
+     * @param textoSeparado - jogada que chegou de algum jogador
+     * @since 1.0
+     */
+    private void bloquear(StringBuilder streamToSend, String[] textoSeparado) throws IOException {
+        streamToSend.append("jogada;");
+        streamToSend.append(textoSeparado[1]).append(";").append(textoSeparado[2]).append(";");
+        sendToNext(streamToSend.toString(), bloqueia());
+        jogador.setPontuacao(jogador.getPontuacao() + 20);
+    }
+
+    /**
+     * <p> Metodo que implementa a logica da carta Mais Dois.
+     * </p>
+     * @param streamToSend - jogada que sera enviada para o proximo jogador.
+     * @param textoSeparado - jogada que chegou de algum jogador
+     * @since 1.0
+     */
+    private void maisDois(StringBuilder streamToSend, String[] textoSeparado) throws IOException{
+        if (!jaPescou) {
+            jogador.setPontuacao(jogador.getPontuacao() + 20);
+            streamToSend.append("pescar;");
+            for (Carta c : pescar(2)) streamToSend.append(c.toString());
+            streamToSend.append(textoSeparado[1]).append(";").append(textoSeparado[2]).append(";");
+            sendToNext(streamToSend.toString(), jogador);
+        } else {
+            streamToSend.append("jogada;");
+            streamToSend.append(textoSeparado[1]).append(";").append(textoSeparado[2]).append(";");
+            sendToNext(streamToSend.toString(), jogador);
+        }
+        jaPescou = !jaPescou;
+    }
+
+    /**
+     * <p> Metodo que implementa a logica da carta Pesca Quatro.
+     * </p>
+     * @param streamToSend - jogada que sera enviada para o proximo jogador.
+     * @param textoSeparado - jogada que chegou de algum jogador
+     * @since 1.0
+     */
+    private void pescarQuatro(StringBuilder streamToSend, String[] textoSeparado) throws IOException{
+        if (!jaPescou) {
+            jogador.setPontuacao(jogador.getPontuacao() + 20);
+            streamToSend.append("pescar;");
+            for (Carta c : pescar(4)) streamToSend.append(c.toString());
+            streamToSend.append(textoSeparado[1]).append(";").append(textoSeparado[2]).append(";");
+            sendToNext(streamToSend.toString(), jogador);
+        } else {
+            streamToSend.append("jogada;");
+            streamToSend.append(textoSeparado[1]).append(";").append(textoSeparado[2]).append(";");
+            sendToNext(streamToSend.toString(), jogador);
+        }
+        jaPescou = !jaPescou;
+    }
+
+    /**
+     * <p> Metodo que implementa a logica da carta Escolhe Cor.
+     * </p>
+     * @param streamToSend - jogada que sera enviada para o proximo jogador.
+     * @param textoSeparado - jogada que chegou de algum jogador
+     * @since 1.0
+     */
+    private void escolheCor(StringBuilder streamToSend, String[] textoSeparado) throws IOException{
+        streamToSend.append("jogada;");
+        streamToSend.append(textoSeparado[1]).append(";").append(textoSeparado[2]).append(";");
+        sendToNext(streamToSend.toString(), jogador);
+        jogador.setPontuacao(jogador.getPontuacao() + 50);
+    }
+
+    /**
+     * <p> Metodo que implementa a logica de uma carta normal numerica.
+     * </p>
+     * @param streamToSend - jogada que sera enviada para o proximo jogador.
+     * @param textoSeparado - jogada que chegou de algum jogador
+     * @since 1.0
+     */
+    private void jogadaNormal(StringBuilder streamToSend, String[] textoSeparado) throws IOException{
+        streamToSend.append("jogada;");
+        streamToSend.append(textoSeparado[1]).append(";").append(textoSeparado[2]).append(";");
+        sendToNext(streamToSend.toString(), jogador);
+        jogador.setPontuacao(jogador.getPontuacao() + Integer.parseInt(textoSeparado[1]));
+    }
+
+    /**
+     * <p> Metodo que implementa a logica da pesca de carta, quando o jogador escolhe pescar.
+     * </p>
+     * @param streamToSend - jogada que sera enviada para o proximo jogador.
+     * @param textoSeparado - jogada que chegou de algum jogador.
+     * @param saida - stream usada para enviar uma mensagem para o jogador.
+     * @param jogador - jogador que vai receber as cartas pescadas.
+     * @since 1.0
+     */
+    private void pescarPorEscolha(StringBuilder streamToSend, PrintStream saida, String[] textoSeparado, Jogador jogador) throws IOException{
+        if(!jaPescou) {
+            streamToSend.append("PescarEsc;");
+            for (Carta c : pescar(Integer.parseInt(textoSeparado[1]))) streamToSend.append(c.toString());
+            streamToSend.append(textoSeparado[2]).append(";").append(textoSeparado[3]).append(";");
+            sendToJogador(saida, streamToSend.toString());
+        }else{
+            streamToSend.append("jogada;");
+            streamToSend.append(textoSeparado[2]).append(";").append(textoSeparado[3]).append(";");
+            sendToNext(streamToSend.toString(), jogador);
+        }
+        jaPescou = !jaPescou;
+    }
+
+    /**
+     * <p> Metodo que implementa a logica de quando um jogador ganha.
+     * </p>
+     * @param saida - Stream usada para enviar a mensagem do ganhador para os jogadores.
+     * @since 1.0
+     */
+    private void jogadorGanhou(PrintStream saida) throws IOException{
+        atualizaRanking();
+        System.out.println("O jogador " + jogador.getNome() + " ganhou!!" + " Pontuação de: " + jogador.getPontuacao());
+        sendToAll(saida,"ganhou;O jogador " + jogador.getNome() + " ganhou!!" + " Pontuação de: " + jogador.getPontuacao() + ";");
+        System.out.println("Ranking: ");
+        ranking.forEach(jogador -> System.out.println(jogador.getNome()));
+    }
+
+    /**
+     * <p> Metodo que envia uma mensagem para o proprio jogador.
+     * </p>
+     * @param saida - stream usado para enviar a mensagem para o jogador.
+     * @param linha - mensagem que sera enviada para o jogador.
+     * @since 1.0
+     */
+    private void sendToJogador(PrintStream saida, String linha){
+        saida.println(linha);
+    }
+
+    /**
+     * <p> Metodo que envia uma mensagem para o todos os jogadores.
+     * </p>
+     * @param saida - stream usado para enviar a mensagem para os jogadores.
+     * @param linha - mensagem que sera enviada para os jogadores.
+     * @since 1.0
+     */
+    private void sendToAll(PrintStream saida, String linha) throws IOException {
+        for (Jogador outroCliente : jogadores) {
             PrintStream chat = (PrintStream) outroCliente.getSaida();
-            if (chat != saida) {
-                chat.println(jogador.getNome() + linha);
-            }
+            if (chat != saida) chat.println(jogador.getNome() + linha);
         }
     }
-    private void sendToNext(PrintStream saida, String linha, Jogador jogador) throws IOException {
+
+    /**
+     * <p> Metodo que envia uma mensagem para o proximo jogador.
+     * </p>
+     * @param jogador - usado para encontrar o proximo jogador.
+     * @param linha - mensagem que sera enviada para o proximo jogador.
+     * @since 1.0
+     */
+    private void sendToNext(String linha, Jogador jogador) throws IOException {
         if(jogadores.indexOf(jogador)+1 == jogadores.size()){
             PrintStream jogada = (PrintStream) jogadores.get(0).getSaida();
             jogada.println(linha);
@@ -176,14 +286,26 @@ public class Partida extends Thread {
             jogada.println(linha);
         }
     }
+
+    /**
+     * <p> Metodo que pesca as cartas do baralho.
+     * </p>
+     * @param quant - quantidade a ser pescada
+     * @return lista de cartas
+     * @since 1.0
+     */
     private List<Carta> pescar(int quant){
         List<Carta> cartasPescadas = new ArrayList<>();
         for(int i =0; i<quant;i++) cartasPescadas.add(Baralho.baralho.pop());
         return cartasPescadas;
     }
-    private void inverte(){
-        Collections.reverse(jogadores);
-    }
+
+    /**
+     * <p> Metodo que bloqueia o proximo jogador.
+     * </p>
+     * @return proximo jogador.
+     * @since 1.0
+     */
     private Jogador bloqueia(){
         if(jogadores.indexOf(jogador)+1 == jogadores.size()){
             return jogadores.get(0);
@@ -191,11 +313,22 @@ public class Partida extends Thread {
             return jogadores.get(jogadores.indexOf(jogador)+1);
         }
     }
+
+    /**
+     * <p> Metodo que atualiza o ranking dos jogadores.
+     * </p>
+     * @since 1.0
+     */
     private void atualizaRanking(){
         ranking = jogadores;
         ranking.sort((a, b) -> Integer.compare(b.getPontuacao(), a.getPontuacao()));
     }
 
+    /**
+     * <p> Metodo que inicia o servidor e inicia cada socket da partida.
+     * </p>
+     * @since 1.0
+     */
     public static void main(String args[]) {
         jogadores = new ArrayList<Jogador>();
         Baralho baralho = new Baralho();
@@ -209,7 +342,11 @@ public class Partida extends Thread {
                 jogador.setId(conexao.getRemoteSocketAddress().toString());
                 jogador.setIp(conexao.getRemoteSocketAddress().toString());
                 jogador.setSocket(conexao);
-
+                if(jogoComecou){
+                    conexao.close();
+                    System.out.println("O jogo já começou!");
+                    break;
+                }
                 jogadores.add(jogador);
 
                 System.out.println(" Conectou!: " + conexao.getRemoteSocketAddress());
@@ -221,7 +358,6 @@ public class Partida extends Thread {
                     t.start();
                 }
                 cont++;
-
 
             }
         } catch (IOException e) {
