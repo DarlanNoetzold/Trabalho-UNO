@@ -3,10 +3,8 @@ package br.edu.ifsul.trabalho.uno.server;
 import br.edu.ifsul.trabalho.uno.model.Baralho;
 import br.edu.ifsul.trabalho.uno.model.Carta;
 import br.edu.ifsul.trabalho.uno.model.Jogador;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintStream;
+
+import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.*;
@@ -205,7 +203,11 @@ public class Partida extends Thread {
         streamToSend.append("jogada;");
         streamToSend.append(textoSeparado[1]).append(";").append(textoSeparado[2]).append(";");
         sendToNext(streamToSend.toString(), jogador);
-        jogador.setPontuacao(jogador.getPontuacao() + Integer.parseInt(textoSeparado[1]));
+        try {
+            jogador.setPontuacao(jogador.getPontuacao() + Integer.parseInt(textoSeparado[1]));
+        }catch (Exception e){
+            System.out.println("Mais dois ou mais quatro foi jogado");
+        }
     }
 
     /**
@@ -243,6 +245,17 @@ public class Partida extends Thread {
         sendToAll(saida,"ganhou;O jogador " + jogador.getNome() + " ganhou!!" + " Pontuação de: " + jogador.getPontuacao() + ";");
         System.out.println("Ranking: ");
         ranking.forEach(jogador -> System.out.println(jogador.getNome()));
+
+        FileWriter arq = new FileWriter("jogos"+Calendar.getInstance().getTimeInMillis()+".txt");
+        PrintWriter gravarArq = new PrintWriter(arq);
+
+        gravarArq.printf("%nO jogador " + jogador.getNome() + " ganhou!!" + " Pontuação de: " + jogador.getPontuacao());
+        gravarArq.printf("%nRanking: ");
+        ranking.forEach(jogador -> gravarArq.printf(jogador.getNome() + "%n"));
+        gravarArq.printf("+-------------+%n");
+
+        arq.close();
+
     }
 
     /**

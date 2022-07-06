@@ -24,9 +24,9 @@ public class JogadorNaPartida extends Thread {
 
     private static boolean done = false;
 
-    private Socket conexao;
+    private final Socket conexao;
     private boolean initFlag = true;
-    private List<Carta> cartasNaMao;
+    private final List<Carta> cartasNaMao;
     public JogadorNaPartida(Socket s) {
         cartasNaMao = new ArrayList<>();
         conexao = s;
@@ -48,16 +48,13 @@ public class JogadorNaPartida extends Thread {
             linha = "";
             while (true) {
                 String[] textoSeparado = linha.split(";");
-                if(cartasNaMao.size() == 0){
-                    saida.println("ganhou;");
-                    break;
-                }
+
                 if(textoSeparado[0].equals("PescarEsc")){
                     pescar(textoSeparado);
                     saida.println("PescarEsc;jogada;" + textoSeparado[textoSeparado.length - 2] + ';' + textoSeparado[textoSeparado.length - 1] + ';');
                 }else if(textoSeparado[0].equals("pescar")) {
                     pescar(textoSeparado);
-                    saida.println("jogada;" + textoSeparado[textoSeparado.length - 2] + ';' + textoSeparado[textoSeparado.length - 1] + ';');
+                    saida.println("jogada;" + textoSeparado[textoSeparado.length - 2] +'t'+ ';' + textoSeparado[textoSeparado.length - 1] + ';');
                 }else if(textoSeparado[0].equals("jogada")){
                     if(textoSeparado.length == 2) System.out.println("Sua vez! A carta no topo é: " + textoSeparado[1]);
                     else System.out.println("Sua vez! A carta no topo é: " + textoSeparado[1] + " " + textoSeparado[2]);
@@ -159,14 +156,22 @@ public class JogadorNaPartida extends Thread {
      * @since 1.0
      */
     public void verificaCarta(String[] textoSeparado, int index, Carta cartaEscolhida, PrintStream saida, BufferedReader teclado, boolean falouUno) throws IOException {
+        String ultimoCaractere = textoSeparado[1].substring(textoSeparado[1].length() - 1);
+        if(ultimoCaractere.equals("t")){
+            textoSeparado[1] = textoSeparado[1].substring(0, textoSeparado[1].length()-1);
+        }
         if ((textoSeparado.length == 2) || (textoSeparado[1].equals(cartaEscolhida.getNome()) || textoSeparado[2].equals(cartaEscolhida.getCor()))) {
             if((cartasNaMao.size() == 2) && !falouUno){
                 System.out.println("Você não falou UNO, pesque duas cartas.");
                 saida.println("PescarEsc;2;" + cartasNaMao.get(index).toString());
-                cartasNaMao.remove(index);
             }else {
                 saida.println("jogada;" + cartasNaMao.get(index).toString());
-                cartasNaMao.remove(index);
+            }
+            cartasNaMao.remove(index);
+            if(cartasNaMao.size() == 0){
+                System.out.println("PARABÉNS VOCÊ GANHOU!!");
+                saida.println("ganhou;");
+                conexao.close();
             }
 
         } else {
