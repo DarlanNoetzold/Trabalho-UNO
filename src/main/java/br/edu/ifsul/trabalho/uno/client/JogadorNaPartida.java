@@ -47,6 +47,7 @@ public class JogadorNaPartida extends Thread {
             pescar(linha.split(";"));
             linha = "";
             while (true) {
+                if(linha == null) break;
                 String[] textoSeparado = linha.split(";");
 
                 if(textoSeparado[0].equals("PescarEsc")){
@@ -75,7 +76,7 @@ public class JogadorNaPartida extends Thread {
                 linha = entrada.readLine();
             }
         } catch (IOException e) {
-            System.out.println("IOException: " + e);
+            System.out.println("A PARTIDA ACABOU! Foi forçado seu término por algum jogador ou falha do sistema!");
         }
         done = true;
     }
@@ -124,6 +125,11 @@ public class JogadorNaPartida extends Thread {
                 }else if(codCard.equals("uno")){
                     falouUno = true;
                     System.out.println("Digite o codigo da carta: ");
+                }else if(codCard.equals("sair")){
+                    saida.println("sair;");
+                    conexao.close();
+                    pescou = true;
+                    break;
                 }else {
                     index = Integer.parseInt(codCard);
                     if (index >= cartasNaMao.size()) {

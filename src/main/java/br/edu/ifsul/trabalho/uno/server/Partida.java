@@ -59,6 +59,17 @@ public class Partida extends Thread {
                 String[] textoSeparado = linha.split(";");
 
                 if(textoSeparado.length >= 1) {
+                    if("sair".equals(textoSeparado[0])) {
+                        jogadores.forEach(j -> {
+                            try {
+                                j.getSocket().close();
+                            } catch (IOException e) {
+                                System.out.println("Terminando a partida.");
+                            }
+                        });
+                        sendToNext("sair;", jogador);
+                        break;
+                    }
                     if (Objects.equals(textoSeparado[0], "pescarIni")) {
                         streamToSend.append("pescar;");
                         for (Carta c : pescar(Integer.parseInt(textoSeparado[1]))) streamToSend.append(c.toString());
@@ -96,11 +107,8 @@ public class Partida extends Thread {
                 }
                 linha = entrada.readLine();
             }
-
-            jogadores.remove(saida);
-            conexao.close();
         } catch (IOException e) {
-            System.out.println("IOException: " + e);
+            System.out.println("A PARTIDA ACABOU! Foi forçado seu término por algum jogador ou falha do sistema!");
         }
     }
 
