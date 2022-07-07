@@ -94,6 +94,7 @@ public class Partida extends Thread {
                             jogadaNormal(streamToSend, textoSeparado);
                         }
                     }else if(Objects.equals(textoSeparado[0], "ganhou")){
+                        jogador.setPontuacao(jogador.getPontuacao() + 20);
                         jogadorGanhou(saida);
                         break;
                     }else if(Objects.equals(textoSeparado[0], "PescarEsc")){
@@ -150,18 +151,11 @@ public class Partida extends Thread {
      * @since 1.0
      */
     private void maisDois(StringBuilder streamToSend, String[] textoSeparado) throws IOException{
-        if (!jaPescou) {
-            jogador.setPontuacao(jogador.getPontuacao() + 20);
-            streamToSend.append("pescar;");
-            for (Carta c : pescar(2)) streamToSend.append(c.toString());
-            streamToSend.append(textoSeparado[1]).append(";").append(textoSeparado[2]).append(";");
-            sendToNext(streamToSend.toString(), jogador);
-        } else {
-            streamToSend.append("jogada;");
-            streamToSend.append(textoSeparado[1]).append(";").append(textoSeparado[2]).append(";");
-            sendToNext(streamToSend.toString(), jogador);
-        }
-        jaPescou = !jaPescou;
+        jogador.setPontuacao(jogador.getPontuacao() + 20);
+        streamToSend.append("pescar;");
+        for (Carta c : pescar(2)) streamToSend.append(c.toString());
+        streamToSend.append(textoSeparado[1]).append(";").append(textoSeparado[2]).append(";");
+        sendToNext(streamToSend.toString(), jogador);
     }
 
     /**
@@ -172,18 +166,11 @@ public class Partida extends Thread {
      * @since 1.0
      */
     private void pescarQuatro(StringBuilder streamToSend, String[] textoSeparado) throws IOException{
-        if (!jaPescou) {
-            jogador.setPontuacao(jogador.getPontuacao() + 20);
-            streamToSend.append("pescar;");
-            for (Carta c : pescar(4)) streamToSend.append(c.toString());
-            streamToSend.append(textoSeparado[1]).append(";").append(textoSeparado[2]).append(";");
-            sendToNext(streamToSend.toString(), jogador);
-        } else {
-            streamToSend.append("jogada;");
-            streamToSend.append(textoSeparado[1]).append(";").append(textoSeparado[2]).append(";");
-            sendToNext(streamToSend.toString(), jogador);
-        }
-        jaPescou = !jaPescou;
+        jogador.setPontuacao(jogador.getPontuacao() + 20);
+        streamToSend.append("pescar;");
+        for (Carta c : pescar(4)) streamToSend.append(c.toString());
+        streamToSend.append(textoSeparado[1]).append(";").append(textoSeparado[2]).append(";");
+        sendToNext(streamToSend.toString(), jogador);
     }
 
     /**
@@ -287,7 +274,7 @@ public class Partida extends Thread {
     private void sendToAll(PrintStream saida, String linha) throws IOException {
         for (Jogador outroCliente : jogadores) {
             PrintStream chat = (PrintStream) outroCliente.getSaida();
-            if (chat != saida) chat.println(jogador.getNome() + linha);
+            chat.println(linha);
         }
     }
 

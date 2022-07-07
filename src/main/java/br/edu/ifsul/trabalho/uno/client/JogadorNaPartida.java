@@ -42,7 +42,7 @@ public class JogadorNaPartida extends Thread {
             PrintStream saida = new PrintStream(conexao.getOutputStream());
             BufferedReader teclado= new BufferedReader(new InputStreamReader(System.in));
 
-            saida.println("pescarIni;8;");
+            saida.println("pescarIni;2;");
             String linha = entrada.readLine();
             pescar(linha.split(";"));
             linha = "";
@@ -67,6 +67,7 @@ public class JogadorNaPartida extends Thread {
                     saida.println("inicio");
                 }else if(textoSeparado[0].equals("ganhou")){
                     System.out.println("Alguem ganhou: "+textoSeparado[1]);
+                    break;
                 }
 
                 if (done) {
@@ -166,19 +167,18 @@ public class JogadorNaPartida extends Thread {
         if(ultimoCaractere.equals("t")){
             textoSeparado[1] = textoSeparado[1].substring(0, textoSeparado[1].length()-1);
         }
+
         if ((textoSeparado.length == 2) || (textoSeparado[1].equals(cartaEscolhida.getNome()) || textoSeparado[2].equals(cartaEscolhida.getCor()))) {
-            if((cartasNaMao.size() == 2) && !falouUno){
+            if(cartasNaMao.size() == 1){
+                System.out.println("PARABÉNS VOCÊ GANHOU!!");
+                saida.println("ganhou;");
+            }else if((cartasNaMao.size() == 2) && !falouUno){
                 System.out.println("Você não falou UNO, pesque duas cartas.");
                 saida.println("PescarEsc;2;" + cartasNaMao.get(index).toString());
             }else {
                 saida.println("jogada;" + cartasNaMao.get(index).toString());
             }
             cartasNaMao.remove(index);
-            if(cartasNaMao.size() == 0){
-                System.out.println("PARABÉNS VOCÊ GANHOU!!");
-                saida.println("ganhou;");
-                conexao.close();
-            }
 
         } else {
             System.out.println("Esta carta não pode ser jogada!");

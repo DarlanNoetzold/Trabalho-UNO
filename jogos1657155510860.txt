@@ -1,0 +1,5 @@
+
+O jogador teste 1 ganhou!! Pontuação de: 56
+Ranking: teste 1
+teste 2
++-------------+
