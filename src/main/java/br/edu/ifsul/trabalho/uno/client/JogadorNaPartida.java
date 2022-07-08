@@ -42,7 +42,7 @@ public class JogadorNaPartida extends Thread {
             PrintStream saida = new PrintStream(conexao.getOutputStream());
             BufferedReader teclado= new BufferedReader(new InputStreamReader(System.in));
 
-            saida.println("pescarIni;2;");
+            saida.println("pescarIni;8;");
             String linha = entrada.readLine();
             pescar(linha.split(";"));
             linha = "";
