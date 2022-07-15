@@ -5,7 +5,6 @@
 package br.edu.ifsul.trabalho.uno.client;
 
 import br.edu.ifsul.trabalho.uno.model.Carta;
-import jdk.jfr.Unsigned;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -43,7 +42,7 @@ public class JogadorNaPartida extends Thread {
             PrintStream saida = new PrintStream(conexao.getOutputStream());
             BufferedReader teclado= new BufferedReader(new InputStreamReader(System.in));
 
-            saida.println("pescarIni;8;");
+            saida.println("pescarIni;2;");
             String linha = entrada.readLine();
             pescar(linha.split(";"));
             linha = "";
