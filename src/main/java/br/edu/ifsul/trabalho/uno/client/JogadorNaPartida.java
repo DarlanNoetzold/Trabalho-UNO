@@ -5,6 +5,7 @@
 package br.edu.ifsul.trabalho.uno.client;
 
 import br.edu.ifsul.trabalho.uno.model.Carta;
+import jdk.jfr.Unsigned;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -132,7 +133,7 @@ public class JogadorNaPartida extends Thread {
                     pescou = true;
                     break;
                 }else {
-                    index = Integer.parseInt(codCard);
+                    index = Integer.parseUnsignedInt(codCard);
                     if (index >= cartasNaMao.size()) {
                         System.out.println("Você não tem tantas cartas assim! Digite novamente..");
                         index = -1;
